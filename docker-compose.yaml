@@ -70,7 +70,7 @@ services:
 
   prowlarr:
     <<: *gluetun-network
-    image: 'lscr.io/linuxserver/prowlarr:latest'
+    image: 'linuxserver/prowlarr:version-2.3.0.5236'
     depends_on:
       flaresolverr:
         condition: service_healthy
