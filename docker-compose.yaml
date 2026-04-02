@@ -1,0 +1,216 @@
+
+x-common: &common
+  environment:
+    TZ: ${TZ:-Etc/UTC}
+  restart: unless-stopped
+
+x-gluetun-network: &gluetun-network
+  <<: *common
+  network_mode: 'service:gluetun'
+  depends_on:
+    gluetun:
+      condition: service_healthy
+
+services:
+############################
+# GLUETUN
+############################
+
+  gluetun:
+    <<: *common
+    image: qmcgaw/gluetun
+    container_name: gluetun
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    environment:
+      - VPN_SERVICE_PROVIDER=${VPN_SERVICE_PROVIDER:-nordvpn}
+      - VPN_TYPE=${VPN_TYPE:-openvpn}
+      - OPENVPN_USER=${OPENVPN_USER}
+      - OPENVPN_PASSWORD=${OPENVPN_PASSWORD}
+      - SERVER_COUNTRIES=${SERVER_COUNTRIES:-Netherlands}
+      - SHADOWSOCKS=${SHADOWSOCKS:-on}
+      - CITY=${CITY:-Amsterdam}
+    volumes:
+      - '~/data/trash/config/gluetun:/gluetun'
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "https://www.google.com"]
+
+############################
+# QBITTORRENT		
+############################
+
+  qbittorrent:
+    <<: *gluetun-network
+    image: lscr.io/linuxserver/qbittorrent:latest
+    volumes:
+      - '~/data/trash/config/qbittorrent:/config'
+      - '~/data/trash/data/torrents:/data/torrents'
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8080"]
+
+############################
+# FLARESOLVERR
+############################
+
+  flaresolverr:
+    <<: *gluetun-network
+    image: 'ghcr.io/flaresolverr/flaresolverr:latest'
+    container_name: flaresolverr
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8191/health"]
+
+############################
+# PROWLARR
+############################
+
+  prowlarr:
+    <<: *gluetun-network
+    image: 'lscr.io/linuxserver/prowlarr:latest'
+    depends_on:
+      flaresolverr:
+        condition: service_healthy
+    volumes:
+      - '~/data/trash/config/prowlarr:/config'
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:9696"]
+
+############################
+# Whisparr
+############################
+
+  whisparr:
+    <<: *gluetun-network
+    image: ghcr.io/thespad/whisparr:latest
+    volumes:
+      - '~/data/trash/config/whisparr:/config'
+      - '~/data/trash/data:/data'
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8096"]
+
+############################
+# RADARR
+############################
+
+  radarr:
+    <<: *gluetun-network
+    image: 'lscr.io/linuxserver/radarr:latest'
+    volumes:
+      - '~/data/trash/config/radarr:/config'
+      - '~/data/trash/data:/data'
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:7878/"]
+    
+############################
+# SONARR
+############################
+
+  sonarr:
+    <<: *gluetun-network
+    image: 'lscr.io/linuxserver/sonarr:latest'
+    volumes:
+      - '~/data/trash/config/sonarr:/config'
+      - '~/data/trash/data:/data'
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8989/"]
+
+############################
+# SABNZBD
+############################
+
+  sabnzbd:
+    <<: *gluetun-network
+    image: 'lscr.io/linuxserver/sabnzbd:latest'
+    volumes:
+      - '~/data/trash/config/sabnzbd:/config'
+      - '~/data/trash/data:/data'
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8085/"]
+
+############################
+# BAZARR
+############################
+
+  # bazarr:
+  #   image: lscr.io/linuxserver/bazarr:latest
+  #   container_name: bazarr
+  #   network_mode: "service:gluetun"
+  #   environment:
+  #     - PUID=1000
+  #     - PGID=1000
+  #     - TZ=Etc/UTC
+  #   volumes:
+  #     - /media/arr/bazarr/config:/config
+  #     - /media/arr/radarr/movies:/movies #optional
+  #     - /media/arr/sonarr/tvseries:/tv #optional
+  #   restart: unless-stopped
+    
+############################
+# LIDARR
+############################
+
+  # lidarr:
+  #   image: lscr.io/linuxserver/lidarr:latest
+  #   container_name: lidarr
+  #   network_mode: "service:gluetun"
+  #   environment:
+  #     - PUID=1000
+  #     - PGID=1000
+  #     - TZ=Etc/UTC
+  #   volumes:
+  #     - /media/arr/lidarr/config:/config
+  #     - /media/arr/lidarr/music:/music #optional
+  #     - /media/arr/qbittorrent/downloads:/downloads #optional
+  #   restart: unless-stopped
+
+############################
+# Jellyfin  
+############################
+
+  jellyfin:
+    <<: *common
+    image: lscr.io/linuxserver/jellyfin:latest
+    volumes:
+      - '~/data/trash/config/jellyfin:/config'
+      - '~/data/trash/data:/data'
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8096/"]
+
+############################
+# PLEX	
+############################
+
+  # plex:
+  #   <<: *common
+  #   image: lscr.io/linuxserver/plex:latest
+  #   volumes:
+  #     - '~/data/trash/config/plex:/config'
+  #     - '~/data/trash/data:/data'
+  #   healthcheck:
+  #     test: ["CMD", "curl", "-f", "http://localhost:32400/"]
+
+############################
+# JELLYFIN	
+############################
+
+  # jellyfin:
+  #   image: lscr.io/linuxserver/jellyfin:latest
+  #   container_name: jellyfin
+  #   environment:
+  #     - PUID=1000
+  #     - PGID=1000
+  #     - TZ=Etc/UTC
+  #   volumes:
+  #     - /media/arr/jellyfin/config:/config
+  #     - /media/arr/sonarr/tvseries:/data/tvshows
+  #     - /media/arr/radarr/movies:/data/movies
+  #   ports:
+  #     - 8096:8096
+  #     - 8920:8920 #optional
+  #     - 7359:7359/udp #optional
+  #     - 1900:1900/udp #optional
+  #   restart: unless-stopped
+      
+############################
+

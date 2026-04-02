@@ -1,0 +1,19 @@
+services:
+  gluetun:
+    ports:
+      - 7878:7878 #radarr
+      - 8989:8989 #sonarr
+      # - 6767:6767 #bazarr
+      # - 8686:8686 #lidarr
+      - 8080:8080 #qbittorrent
+      - 6881:6881 #qbittorrent
+      - 6881:6881/udp #qbittorrent
+      - 6969:6969 #whisparr
+      - 9696:9696 #prowlarr
+      - 8085:8085 #sabnzbd
+  # plex:
+  #   ports:
+  #     - 32400:32400 #plex
+  jellyfin:
+    ports:
+      - 8096:8096 #jellyfin
