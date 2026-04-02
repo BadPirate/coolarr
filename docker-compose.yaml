@@ -1,7 +1,10 @@
 
 x-common: &common
+  user: 0:0
   environment:
     TZ: ${TZ:-Etc/UTC}
+    PUID: 0
+    PGID: 0
   restart: unless-stopped
 
 x-gluetun-network: &gluetun-network
