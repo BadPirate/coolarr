@@ -178,7 +178,7 @@ services:
       - '~/data/trash/config/jellyfin:/config'
       - '~/data/trash/data:/data'
     healthcheck:
-      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8096/"]
+      test: ["CMD", "curl", "-f", "http://localhost:8096/"]
 
 ############################
 # PLEX	
