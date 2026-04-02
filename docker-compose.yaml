@@ -171,14 +171,14 @@ services:
 # Jellyfin  
 ############################
 
-  jellyfin:
-    <<: *common
-    image: lscr.io/linuxserver/jellyfin:latest
-    volumes:
-      - '~/data/trash/config/jellyfin:/config'
-      - '~/data/trash/data:/data'
-    healthcheck:
-      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8096/"]
+  # jellyfin:
+  #   <<: *common
+  #   image: lscr.io/linuxserver/jellyfin:latest
+  #   volumes:
+  #     - '~/data/trash/config/jellyfin:/config'
+  #     - '~/data/trash/data:/data'
+  #   healthcheck:
+  #     test: ["CMD", "wget", "--spider", "-q", "http://localhost:8096/"]
 
 ############################
 # PLEX	
