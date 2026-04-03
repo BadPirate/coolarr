@@ -206,6 +206,7 @@ services:
       context: .
       dockerfile: docker/unmanic/Dockerfile
     image: arr-unmanic:safari-h264
+    cpus: 0.8
     environment:
       <<: *default_env
       HOME_DIR: /config
