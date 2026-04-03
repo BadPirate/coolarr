@@ -192,4 +192,3 @@ services:
   #     - '~/data/trash/data:/data'
   #   healthcheck:
   #     test: ["CMD", "curl", "-f", "http://localhost:32400/"]
-

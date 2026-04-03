@@ -1,0 +1,25 @@
+x-common: &common
+  user: 0:0
+  environment:
+    TZ: ${TZ:-Etc/UTC}
+    PUID: 0
+    PGID: 0
+  restart: unless-stopped
+
+services:
+  unmanic:
+    <<: *common
+    build:
+      context: ./docker/unmanic
+      dockerfile: Dockerfile
+    image: arr-unmanic:safari-h264
+    # In the Unmanic UI, set library worker count to 1 so only one file transcodes at a time (e.g. overnight on Pi).
+    environment:
+      HOME_DIR: /config
+    ports:
+      - '8888:8888'
+    volumes:
+      - '~/data/trash/config/unmanic:/config'
+      - '~/data/trash/data/media:/library'
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8888/"]

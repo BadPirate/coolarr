@@ -1,0 +1,17 @@
+{
+  "author": "arr-gluetun",
+  "icon": "",
+  "compatibility": [2],
+  "description": "Target H.264 + AAC in MP4 (yuv420p, +faststart) for iOS, WebOS, and desktop Safari.\nFully compatible files are skipped. If codecs are already H.264/AAC but the container is not MP4 (e.g. MKV), remuxes with stream copy when possible; otherwise re-encodes video (libx264 or optional h264_v4l2m2m on Raspberry Pi).\nAfter success, removes the original when the final path differs (e.g. deleting the MKV after writing the MP4). Use one library worker for serial overnight jobs on slow hardware.",
+  "defer_dependency_install": false,
+  "id": "safari_h264_mp4",
+  "name": "Safari / iOS H.264 MP4",
+  "platform": ["linux"],
+  "priorities": {
+    "on_library_management_file_test": 40,
+    "on_worker_process": 40,
+    "on_postprocessor_file_movement": 40
+  },
+  "tags": "ffmpeg,h264,aac,mp4,safari,ios,webos,compatibility",
+  "version": "1.0.1"
+}
