@@ -192,3 +192,24 @@ services:
   #     - '~/data/trash/data:/data'
   #   healthcheck:
   #     test: ["CMD", "curl", "-f", "http://localhost:32400/"]
+
+
+############################
+# Unmanic	
+############################
+
+  unmanic:
+    <<: *common
+    build:
+      context: ./docker/unmanic
+      dockerfile: Dockerfile
+    image: arr-unmanic:safari-h264
+    environment:
+      HOME_DIR: /config
+    ports:
+      - '8888:8888'
+    volumes:
+      - '~/data/trash/config/unmanic:/config'
+      - '~/data/trash/data/media:/library'
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8888/"]
