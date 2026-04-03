@@ -1,7 +1,7 @@
 
 x-common: &common
   user: 0:0
-  environment:
+  environment: &default_env
     TZ: ${TZ:-Etc/UTC}
     PUID: 0
     PGID: 0
@@ -197,17 +197,18 @@ services:
 ############################
 # Unmanic	
 ############################
+# Build uses repo root as context (reliable on Coolify/CI). If build fails with
+# "load local bake definitions", set host env COMPOSE_BAKE=false for docker compose build.
 
   unmanic:
     <<: *common
     build:
-      context: ./docker/unmanic
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: docker/unmanic/Dockerfile
     image: arr-unmanic:safari-h264
     environment:
+      <<: *default_env
       HOME_DIR: /config
-    ports:
-      - '8888:8888'
     volumes:
       - '~/data/trash/config/unmanic:/config'
       - '~/data/trash/data/media:/library'

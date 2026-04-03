@@ -1,0 +1,3 @@
+# Smaller/faster builds when context is repo root (Coolify, CI)
+.git
+.gitignore
