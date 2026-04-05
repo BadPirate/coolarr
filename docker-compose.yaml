@@ -34,11 +34,20 @@ services:
       - OPENVPN_PASSWORD=${OPENVPN_PASSWORD}
       - SERVER_COUNTRIES=${SERVER_COUNTRIES:-Netherlands}
       - SHADOWSOCKS=${SHADOWSOCKS:-on}
-      - CITY=${CITY:-Amsterdam}
+      # Prefer SERVER_CITIES (CITY is deprecated). Matches Nord server filter.
+      - SERVER_CITIES=${SERVER_CITIES:-${CITY:-Amsterdam}}
+      # TCP+TLS healthchecks use IPs so startup does not depend on Gluetun DNS
+      # (avoids "lookup github.com/cloudflare.com: i/o timeout" while blocklists load).
+      - HEALTH_TARGET_ADDRESSES=1.1.1.1:443,8.8.8.8:443
     volumes:
       - '~/data/trash/config/gluetun:/gluetun'
+    # Use Gluetun's own check (HTTP 127.0.0.1:9999), not wget+DNS to google.com.
     healthcheck:
-      test: ["CMD", "wget", "--spider", "-q", "https://www.google.com"]
+      test: ["CMD", "/gluetun-entrypoint", "healthcheck"]
+      interval: 10s
+      timeout: 10s
+      start_period: 60s
+      retries: 3
 
 ############################
 # QBITTORRENT		
