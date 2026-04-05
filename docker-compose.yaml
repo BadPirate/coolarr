@@ -235,5 +235,5 @@ services:
     volumes:
       - '~/data/trash/config/notifiarr:/config'
       - '~/data/trash/data:/data'
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5454/"]
+    # healthcheck:
+    #   test: ["CMD", "curl", "-f", "http://localhost:5454/"]
