@@ -215,3 +215,16 @@ services:
       - '~/data/trash/data/media:/library'
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8888/"]
+
+############################
+# Notifiarr	
+############################
+
+  notifiarr:
+    <<: *gluetun-network
+    image: golift/notifiarr:latest
+    volumes:
+      - '~/data/trash/config/notifiarr:/config'
+      - '~/data/trash/data:/data'
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5454/"]

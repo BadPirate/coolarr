@@ -13,5 +13,5 @@
     "on_postprocessor_file_movement": 40
   },
   "tags": "ffmpeg,h264,aac,mp4,safari,ios,webos,compatibility",
-  "version": "1.0.1"
+  "version": "1.0.3"
 }

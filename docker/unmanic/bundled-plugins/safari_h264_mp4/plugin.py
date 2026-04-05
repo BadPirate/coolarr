@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-Re-encode to H.264 / AAC / MP4 for Safari, iOS, and WebOS-friendly playback.
+Re-encode to H.264 + AAC + MP4 for Safari, iOS, and WebOS-friendly playback.
 """
 
 from __future__ import annotations
@@ -12,7 +12,7 @@ import logging
 import os
 import re
 import subprocess
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 from unmanic.libs.unplugins.settings import PluginSettings
 
@@ -42,56 +42,52 @@ VIDEO_EXTENSIONS = {
 class Settings(PluginSettings):
     settings = {
         "video_encoder": "libx264",
-        # medium is a good default: much faster than slow/veryslow with modest size/quality cost
         "preset": "medium",
         "crf": "22",
         "audio_bitrate_k": "192",
+        "audio_stereo": True,
         "strip_subtitles": True,
-        # 0 = ffmpeg/libx264 use all logical CPUs (helps decode of heavy sources + encode)
-        "thread_count": "0",
     }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.form_settings = {
             "video_encoder": {
-                "label": "Video encoder (libx264 for quality/compat; h264_v4l2m2m on Pi with /dev/video* passed through)",
+                "label": "Video encoder",
                 "input_type": "select",
                 "select_options": [
-                    {"value": "libx264", "label": "libx264 (software, recommended)"},
-                    {"value": "h264_v4l2m2m", "label": "h264_v4l2m2 (Raspberry Pi hardware)"},
+                    {"value": "libx264", "label": "libx264 (software)"},
+                    {"value": "h264_v4l2m2m", "label": "h264_v4l2m2m (Raspberry Pi)"},
                 ],
             },
             "preset": {
-                "label": "x264 preset: slower = better compression at same CRF, faster presets = higher speed, larger files or more artifacts (ignored for v4l2m2m)",
+                "label": "x264 preset",
                 "input_type": "select",
                 "select_options": [
-                    {"value": "veryslow", "label": "veryslow (smallest files, slowest)"},
+                    {"value": "veryslow", "label": "veryslow"},
                     {"value": "slower", "label": "slower"},
                     {"value": "slow", "label": "slow"},
-                    {"value": "medium", "label": "medium (balanced)"},
+                    {"value": "medium", "label": "medium"},
                     {"value": "fast", "label": "fast"},
                     {"value": "faster", "label": "faster"},
                     {"value": "veryfast", "label": "veryfast"},
-                    {"value": "superfast", "label": "superfast"},
-                    {"value": "ultrafast", "label": "ultrafast (fastest, worst efficiency)"},
                 ],
             },
             "crf": {
-                "label": "CRF (18–28, lower is higher quality; v4l2m2m uses similar QP via -b:v)",
+                "label": "CRF (18–28)",
                 "input_type": "text",
             },
             "audio_bitrate_k": {
-                "label": "AAC audio bitrate (kb/s)",
+                "label": "AAC bitrate (kb/s per stereo output)",
                 "input_type": "text",
             },
-            "strip_subtitles": {
-                "label": "Strip subtitle streams (best for broad device support)",
+            "audio_stereo": {
+                "label": "Stereo AAC (recommended for iOS; downmixes surround)",
                 "input_type": "checkbox",
             },
-            "thread_count": {
-                "label": "Thread count (0 = auto, use all CPUs for decode/encode)",
-                "input_type": "text",
+            "strip_subtitles": {
+                "label": "Strip subtitles",
+                "input_type": "checkbox",
             },
         }
 
@@ -149,6 +145,19 @@ def _container_is_mp4_family(probe: Dict[str, Any]) -> bool:
     return _format_names_ok(fmt.get("format_name") or "")
 
 
+def _audio_safe_for_ios_mp4_remux(probe: Dict[str, Any]) -> bool:
+    for s in probe.get("streams") or []:
+        if s.get("codec_type") != "audio":
+            continue
+        try:
+            ch = int(s.get("channels") or 0)
+        except (TypeError, ValueError):
+            ch = 0
+        if ch > 2:
+            return False
+    return True
+
+
 def _is_fully_compatible(probe: Dict[str, Any]) -> bool:
     return _streams_match_target(probe) and _container_is_mp4_family(probe)
 
@@ -159,6 +168,10 @@ def _probe_duration(probe: Dict[str, Any]) -> float:
         return float(fmt.get("duration") or 0.0)
     except (TypeError, ValueError):
         return 0.0
+
+
+def _audio_output_stream_count(probe: Dict[str, Any]) -> int:
+    return sum(1 for s in probe.get("streams") or [] if s.get("codec_type") == "audio")
 
 
 def _make_progress_parser(duration_sec: float):
@@ -249,15 +262,16 @@ def on_worker_process(data):
         abit = int(str(settings.get_setting("audio_bitrate_k") or "192"))
     except ValueError:
         abit = 192
+    audio_stereo = bool(settings.get_setting("audio_stereo"))
     strip_subs = bool(settings.get_setting("strip_subtitles"))
-    try:
-        threads = int(str(settings.get_setting("thread_count") or "0"))
-    except ValueError:
-        threads = 0
-    if threads < 0:
-        threads = 0
 
-    remux_only = _streams_match_target(probe) and not _container_is_mp4_family(probe)
+    n_audio_out = _audio_output_stream_count(probe)
+
+    remux_only = (
+        _streams_match_target(probe)
+        and not _container_is_mp4_family(probe)
+        and _audio_safe_for_ios_mp4_remux(probe)
+    )
 
     cmd: List[str] = [
         "ffmpeg",
@@ -265,16 +279,32 @@ def on_worker_process(data):
         "-loglevel",
         "info",
         "-stats",
-        "-threads",
-        str(threads),
         "-y",
         "-i",
         abspath,
     ]
 
     if remux_only:
-        # Stream copy into MP4; subtitles omitted (PGS / bitmap subs break MP4 copy)
-        cmd.extend(["-map", "0:v:0", "-map", "0:a?", "-sn", "-map_chapters", "0", "-map_metadata", "0", "-c", "copy", "-movflags", "+faststart", "-f", "mp4", file_out])
+        cmd.extend(
+            [
+                "-map",
+                "0:v:0",
+                "-map",
+                "0:a?",
+                "-sn",
+                "-map_chapters",
+                "0",
+                "-map_metadata",
+                "0",
+                "-c",
+                "copy",
+                "-movflags",
+                "+faststart",
+                "-f",
+                "mp4",
+                file_out,
+            ]
+        )
         data["exec_command"] = cmd
         data["command_progress_parser"] = _make_progress_parser(duration_sec)
         return data
@@ -306,28 +336,37 @@ def on_worker_process(data):
             ]
         )
     else:
-        x264_args = [
-            "-c:v",
-            "libx264",
-            "-profile:v",
-            "high",
-            "-level",
-            "4.1",
-            "-pix_fmt",
-            "yuv420p",
-            "-preset",
-            str(preset),
-            "-crf",
-            str(crf),
-        ]
-        if threads > 0:
-            x264_args.extend(["-x264-params", "threads={}".format(threads)])
-        cmd.extend(x264_args)
+        cmd.extend(
+            [
+                "-c:v",
+                "libx264",
+                "-profile:v",
+                "high",
+                "-level",
+                "4.1",
+                "-pix_fmt",
+                "yuv420p",
+                "-preset",
+                str(preset),
+                "-crf",
+                str(crf),
+            ]
+        )
+
+    # iOS/AVPlayer: stereo AAC-LC @ 48 kHz. Global "-ac 2" does not reliably apply to the output
+    # stream; use per-stream "-ac:a:N 2" before "-c:a" so surround (e.g. eac3 5.1) downmixes.
+    if audio_stereo and n_audio_out > 0:
+        for i in range(n_audio_out):
+            cmd.extend(["-ac:a:{}".format(i), "2"])
 
     cmd.extend(
         [
             "-c:a",
             "aac",
+            "-profile:a",
+            "aac_low",
+            "-ar",
+            "48000",
             "-b:a",
             "{}k".format(abit),
             "-movflags",

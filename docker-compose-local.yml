@@ -11,6 +11,7 @@ services:
       - 6969:6969 #whisparr
       - 9696:9696 #prowlarr
       - 8085:8085 #sabnzbd
+      - 5454:5454 #notifiarr
   # plex:
   #   ports:
   #     - 32400:32400 #plex

@@ -7,5 +7,6 @@ USER root
 COPY docker/unmanic/bundled-plugins/ /opt/unmanic-bundled-plugins/
 COPY docker/unmanic/register_bundled_plugin.py /opt/unmanic-bundled-plugins/register_bundled_plugin.py
 COPY docker/unmanic/cont-init.d/ /etc/cont-init.d/
+COPY docker/unmanic/scripts/run_plugin_encode_test.py /opt/unmanic-scripts/run_plugin_encode_test.py
 
-RUN chmod 755 /etc/cont-init.d/*.sh 2>/dev/null || true
+RUN chmod 755 /etc/cont-init.d/*.sh /opt/unmanic-scripts/run_plugin_encode_test.py 2>/dev/null || true
