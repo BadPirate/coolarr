@@ -30,6 +30,6 @@ services:
       flaresolverr:
         condition: service_healthy
     volumes:
-      - '~/data/trash/config/prowlarr:/config'
+      - '/data/trash/config/prowlarr:/config'
     healthcheck:
       test: ["CMD", "wget", "--spider", "-q", "http://localhost:9696"]
