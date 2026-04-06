@@ -1,0 +1,133 @@
+
+x-common: &common
+  user: 0:0
+  environment: &default_env
+    TZ: ${TZ:-Etc/UTC}
+    PUID: 0
+    PGID: 0
+  restart: unless-stopped
+
+services:
+############################
+# Whisparr
+############################
+
+  whisparr:
+    <<: *common
+    image: ghcr.io/thespad/whisparr:latest
+    volumes:
+      - '/data/trash/config/whisparr:/config'
+      - '/data/trash/data:/data'
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:6969"]
+
+############################
+# RADARR
+############################
+
+  radarr:
+    <<: *common
+    image: 'lscr.io/linuxserver/radarr:latest'
+    volumes:
+      - '/data/trash/config/radarr:/config'
+      - '/data/trash/data:/data'
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:7878/"]
+    
+############################
+# SONARR
+############################
+
+  sonarr:
+    <<: *common
+    image: 'lscr.io/linuxserver/sonarr:latest'
+    volumes:
+      - '/data/trash/config/sonarr:/config'
+      - '/data/trash/data:/data'
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8989/"]
+
+############################
+# READARR
+############################
+
+  readarr:
+    <<: *common
+    image: 'lscr.io/linuxserver/readarr:latest'
+    volumes:
+      - '/data/trash/config/readarr:/config'
+      - '/data/trash/data:/data'
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8787/"]
+  
+
+############################
+# BAZARR
+############################
+
+  # bazarr:
+  #   image: lscr.io/linuxserver/bazarr:latest
+  #   container_name: bazarr
+  #   network_mode: "service:gluetun"
+  #   environment:
+  #     - PUID=1000
+  #     - PGID=1000
+  #     - TZ=Etc/UTC
+  #   volumes:
+  #     - /media/arr/bazarr/config:/config
+  #     - /media/arr/radarr/movies:/movies #optional
+  #     - /media/arr/sonarr/tvseries:/tv #optional
+  #   restart: unless-stopped
+    
+############################
+# LIDARR
+############################
+
+  # lidarr:
+  #   image: lscr.io/linuxserver/lidarr:latest
+  #   container_name: lidarr
+  #   network_mode: "service:gluetun"
+  #   environment:
+  #     - PUID=1000
+  #     - PGID=1000
+  #     - TZ=Etc/UTC
+  #   volumes:
+  #     - /media/arr/lidarr/config:/config
+  #     - /media/arr/lidarr/music:/music #optional
+  #     - /media/arr/qbittorrent/downloads:/downloads #optional
+  #   restart: unless-stopped
+
+############################
+# Jellyfin  
+############################
+
+  jellyfin:
+    <<: *common
+    image: lscr.io/linuxserver/jellyfin:latest
+    volumes:
+      - '~/data/trash/config/jellyfin:/config'
+      - '~/data/trash/data:/data'
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8096/"]
+
+############################
+# Unmanic	
+############################
+# Build uses repo root as context (reliable on Coolify/CI). If build fails with
+# "load local bake definitions", set host env COMPOSE_BAKE=false for docker compose build.
+
+  unmanic:
+    <<: *common
+    build:
+      context: .
+      dockerfile: docker/unmanic/Dockerfile
+    image: arr-unmanic:safari-h264
+    cpus: 0.8
+    environment:
+      <<: *default_env
+      HOME_DIR: /config
+    volumes:
+      - '~/data/trash/config/unmanic:/config'
+      - '~/data/trash/data/media:/library'
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8888/"]
