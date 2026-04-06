@@ -55,11 +55,11 @@ services:
 # READARR
 ############################
 
-  readarr:
+  listenarr:
     <<: *common
-    image: lscr.io/linuxserver/readarr:develop
+    image: ghcr.io/listenarrs/listenarr:canary
     volumes:
-      - '/data/trash/config/readarr:/config'
+      - '/data/trash/config/listenarr:/app/config'
       - '/data/trash/data:/data'
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8787/"]
+      test: ["CMD", "curl", "-f", "http://localhost:4545/"]
