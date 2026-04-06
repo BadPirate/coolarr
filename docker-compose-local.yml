@@ -12,6 +12,7 @@ services:
       - 9696:9696 #prowlarr
       - 8085:8085 #sabnzbd
       - 5454:5454 #notifiarr
+      - 4545:4545 #listenarr
   # plex:
   #   ports:
   #     - 32400:32400 #plex
