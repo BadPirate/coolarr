@@ -1,0 +1,30 @@
+
+x-common: &common
+  user: 0:0
+  environment: &default_env
+    TZ: ${TZ:-Etc/UTC}
+    PUID: 0
+    PGID: 0
+  restart: unless-stopped
+
+services:
+
+############################
+# Unmanic	
+############################
+
+  unmanic:
+    <<: *common
+    build:
+      context: .
+      dockerfile: docker/unmanic/Dockerfile
+    image: arr-unmanic:safari-h264
+    cpus: 0.8
+    environment:
+      <<: *default_env
+      HOME_DIR: /config
+    volumes:
+      - '/data/trash/config/unmanic:/config'
+      - '/data/trash/data/media:/library'
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8888/"]
