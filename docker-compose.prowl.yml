@@ -1,0 +1,35 @@
+
+x-common: &common
+  user: 0:0
+  environment: &default_env
+    TZ: ${TZ:-Etc/UTC}
+    PUID: 0
+    PGID: 0
+  restart: unless-stopped
+
+services:
+############################
+# FLARESOLVERR
+############################
+
+  flaresolverr:
+    <<: *common
+    image: 'ghcr.io/flaresolverr/flaresolverr:latest'
+    container_name: flaresolverr
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8191/health"]
+
+############################
+# PROWLARR
+############################
+
+  prowlarr:
+    <<: *common
+    image: 'linuxserver/prowlarr:develop'
+    depends_on:
+      flaresolverr:
+        condition: service_healthy
+    volumes:
+      - '~/data/trash/config/prowlarr:/config'
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:9696"]
