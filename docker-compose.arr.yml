@@ -57,7 +57,7 @@ services:
 
   readarr:
     <<: *common
-    image: 'lscr.io/linuxserver/readarr:latest'
+    image: lscr.io/linuxserver/readarr:develop
     volumes:
       - '/data/trash/config/readarr:/config'
       - '/data/trash/data:/data'
