@@ -1,2 +1,50 @@
 .env
 .DS_Store
+
+# --- trash/data: runtime media & downloads (keep folder skeleton via .gitkeep) ---
+trash/data/**/*
+!trash/data/**/
+!trash/data/**/.gitkeep
+
+# --- trash/config: shared runtime artifacts ---
+trash/config/**/*.db-wal
+trash/config/**/*.db-shm
+trash/config/**/*.pid
+trash/config/**/logs/
+trash/config/**/logs.db
+trash/config/**/logs.db-wal
+trash/config/**/logs.db-shm
+trash/config/**/.cache/
+trash/config/**/cache/
+trash/config/**/__pycache__/
+trash/config/**/*.pyc
+
+# --- *arr (Radarr, Sonarr, Prowlarr): regenerated at runtime ---
+trash/config/radarr/MediaCover/
+trash/config/radarr/Sentry/
+trash/config/sonarr/MediaCover/
+trash/config/sonarr/Sentry/
+trash/config/prowlarr/Definitions/
+
+# --- qBittorrent: session state & caches ---
+trash/config/qbittorrent/qBittorrent/BT_backup/
+trash/config/qbittorrent/qBittorrent/GeoDB/
+trash/config/qbittorrent/qBittorrent/lockfile
+trash/config/qbittorrent/qBittorrent/rss/articles/
+trash/config/qbittorrent/qBittorrent/rss/*.lock
+
+# --- Gluetun: auto-downloaded server list ---
+trash/config/gluetun/servers.json
+
+# --- Jellyfin: caches, logs, scraped metadata, transcodes ---
+trash/config/jellyfin/.aspnet/
+trash/config/jellyfin/log/
+trash/config/jellyfin/cache/
+trash/config/jellyfin/data/metadata/
+trash/config/jellyfin/data/transcodes/
+
+# --- Unmanic: task DB, logs, plugin repo cache ---
+trash/config/unmanic/.local/
+trash/config/unmanic/.unmanic/logs/
+trash/config/unmanic/.unmanic/config/unmanic.db
+trash/config/unmanic/.unmanic/plugins/repo-*.json

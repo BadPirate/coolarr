@@ -16,7 +16,15 @@ services:
     <<: *common
     image: lscr.io/linuxserver/jellyfin:latest
     volumes:
-      - '/data/trash/config/jellyfin:/config'
-      - '/data/trash/data:/data'
+      - type: volume
+        source: trash
+        target: /config
+        volume:
+          subpath: config/jellyfin
+      - type: volume
+        source: trash
+        target: /data
+        volume:
+          subpath: data
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8096/"]

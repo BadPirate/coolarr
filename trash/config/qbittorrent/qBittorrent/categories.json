@@ -1,0 +1,14 @@
+{
+    "prowlarr": {
+        "save_path": "/data/torrents/tv"
+    },
+    "radarr": {
+        "save_path": "/data/torrents/movies"
+    },
+    "sonarr": {
+        "save_path": "/data/torrents/tv"
+    },
+    "tv-sonarr": {
+        "save_path": "/data/torrents/tv"
+    }
+}

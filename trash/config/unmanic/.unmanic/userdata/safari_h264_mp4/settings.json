@@ -1,0 +1,8 @@
+{
+  "video_encoder": "libx264",
+  "preset": "medium",
+  "crf": "22",
+  "audio_bitrate_k": "192",
+  "audio_stereo": true,
+  "strip_subtitles": true
+}
