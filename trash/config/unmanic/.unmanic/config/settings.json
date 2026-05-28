@@ -21,7 +21,7 @@
     "plugins_path": "/config/.unmanic/plugins",
     "release_notes_viewed": "0.4.0",
     "remote_installations": [],
-    "run_full_scan_on_start": false,
+    "run_full_scan_on_start": true,
     "schedule_full_scan_minutes": 1440,
     "ssl_certfilepath": null,
     "ssl_enabled": false,
