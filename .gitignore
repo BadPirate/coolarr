@@ -1,5 +1,19 @@
 .env
+
+# --- macOS metadata junk (AppleDouble sidecars, Finder/volume files) ---
 .DS_Store
+**/.DS_Store
+._*
+**/._*
+.AppleDouble
+.LSOverride
+.Spotlight-V100
+.Trashes
+.fseventsd
+.DocumentRevisions-V100
+.TemporaryItems
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
 
 # --- trash/data: runtime media & downloads (keep folder skeleton via .gitkeep) ---
 trash/data/**/*

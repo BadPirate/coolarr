@@ -182,6 +182,8 @@ services:
     image: lscr.io/linuxserver/jellyfin:latest
     environment:
       - SERVICE_URL_JELLYFIN_8096
+    ports:
+      - 8096:8096
     volumes:
       - type: volume
         source: trash
