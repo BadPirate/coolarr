@@ -31,6 +31,9 @@ services:
       - SERVICE_URL_GLUETUN_8080 # qbittorrent
       - VPN_SERVICE_PROVIDER=${VPN_SERVICE_PROVIDER:-nordvpn}
       - VPN_TYPE=${VPN_TYPE:-openvpn}
+      # WireGuard (NordLynx) is far lighter on CPU than OpenVPN on the Pi (no AES-NI).
+      # Set VPN_TYPE=wireguard and WIREGUARD_PRIVATE_KEY in .env to use it.
+      - WIREGUARD_PRIVATE_KEY=${WIREGUARD_PRIVATE_KEY:-}
       - OPENVPN_USER=${OPENVPN_USER}
       - OPENVPN_PASSWORD=${OPENVPN_PASSWORD}
       - SERVER_COUNTRIES=${SERVER_COUNTRIES:-Netherlands}
