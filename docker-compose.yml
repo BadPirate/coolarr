@@ -7,6 +7,13 @@ x-common: &common
     PGID: ${PGID:-0}
   restart: unless-stopped
 
+x-background: &background
+  <<: *common
+  cpu_shares: ${BACKGROUND_CPU_SHARES:-2}
+  blkio_config:
+    weight: 10
+
+
 x-gluetun-network: &gluetun-network
   <<: *common
   network_mode: 'service:gluetun'
@@ -62,7 +69,7 @@ services:
 ############################
 
   qbittorrent:
-    <<: *gluetun-network
+    <<: [*gluetun-network, *background]
     image: lscr.io/linuxserver/qbittorrent:latest
     volumes:
       - type: volume
@@ -156,12 +163,11 @@ services:
 ############################
 
   unmanic:
-    <<: *common
+    <<: *background
     build:
       context: .
       dockerfile: docker/unmanic/Dockerfile
     image: arr-unmanic:safari-h264
-    cpus: ${UNMANIC_CPUS:-0.8}
     environment:
       <<: *default_env
       HOME_DIR: /config
