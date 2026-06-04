@@ -27,7 +27,7 @@ services:
 ############################
 
   gluetun:
-    <<: *common
+    <<: *background
     image: qmcgaw/gluetun
     container_name: gluetun
     cap_add:
